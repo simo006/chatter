@@ -28,6 +28,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public void register(RegisterUserDto registerUserDto) {
+        User user = modelMapper.map(registerUserDto, User.class);
+        user.setPassword(passwordEncoder.encode(registerUserDto.getPassword()));
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public boolean isEmailFree(String email) {
+        return !userRepository.existsByEmail(email);
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Bad credentials"));
 
