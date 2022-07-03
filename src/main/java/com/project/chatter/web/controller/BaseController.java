@@ -1,12 +1,11 @@
 package com.project.chatter.web.controller;
 
-import com.project.chatter.model.view.FieldErrorView;
-import com.project.chatter.model.view.SuccessView;
+import com.project.chatter.model.view.basic.FieldErrorView;
+import com.project.chatter.model.view.basic.SuccessView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
 
 public class BaseController {
 

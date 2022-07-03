@@ -3,7 +3,7 @@ package com.project.chatter.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.chatter.config.filter.EmailPasswordAuthenticationFilter;
 import com.project.chatter.model.dto.UserDetailsDto;
-import com.project.chatter.model.view.SuccessView;
+import com.project.chatter.model.view.basic.SuccessView;
 import com.project.chatter.model.view.UserDataView;
 import com.project.chatter.service.AuthService;
 import org.springframework.context.annotation.Bean;

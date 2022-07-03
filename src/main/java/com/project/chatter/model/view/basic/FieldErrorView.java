@@ -1,4 +1,4 @@
-package com.project.chatter.model.view;
+package com.project.chatter.model.view.basic;
 
 public class FieldErrorView {
 

@@ -2,8 +2,8 @@ package com.project.chatter.web.controller;
 
 import com.project.chatter.model.dto.RegisterUserDto;
 import com.project.chatter.model.dto.UserDetailsDto;
-import com.project.chatter.model.view.FieldErrorView;
-import com.project.chatter.model.view.SuccessView;
+import com.project.chatter.model.view.basic.FieldErrorView;
+import com.project.chatter.model.view.basic.SuccessView;
 import com.project.chatter.model.view.UserDataView;
 import com.project.chatter.service.AuthService;
 import com.project.chatter.web.exception.RequestBodyValidationError;

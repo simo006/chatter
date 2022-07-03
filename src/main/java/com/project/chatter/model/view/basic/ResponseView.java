@@ -1,4 +1,4 @@
-package com.project.chatter.model.view;
+package com.project.chatter.model.view.basic;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

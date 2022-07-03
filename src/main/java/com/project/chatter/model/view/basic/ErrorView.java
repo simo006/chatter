@@ -1,4 +1,4 @@
-package com.project.chatter.model.view;
+package com.project.chatter.model.view.basic;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

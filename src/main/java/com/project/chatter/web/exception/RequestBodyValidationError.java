@@ -1,6 +1,6 @@
 package com.project.chatter.web.exception;
 
-import com.project.chatter.model.view.FieldErrorView;
+import com.project.chatter.model.view.basic.FieldErrorView;
 
 import java.util.List;
 
