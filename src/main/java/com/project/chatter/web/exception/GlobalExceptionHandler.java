@@ -24,4 +24,14 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NotFoundError.class)
+    public ErrorView handleNotFoundError(NotFoundError error, HttpServletRequest request) {
+        return new ErrorView(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                error.getMessage(),
+                request.getServletPath()
+        );
+    }
 }
