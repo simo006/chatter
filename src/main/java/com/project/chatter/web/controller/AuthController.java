@@ -1,34 +1,30 @@
 package com.project.chatter.web.controller;
 
 import com.project.chatter.model.dto.RegisterUserDto;
-import com.project.chatter.model.dto.UserDetailsDto;
 import com.project.chatter.model.view.basic.FieldErrorView;
 import com.project.chatter.model.view.basic.SuccessView;
 import com.project.chatter.model.view.UserDataView;
 import com.project.chatter.service.AuthService;
 import com.project.chatter.web.exception.RequestBodyValidationError;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.naming.AuthenticationException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController extends BaseController {
 
-    private final AuthService authService;
+    private final AuthService userService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public AuthController(AuthService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("/test")
@@ -54,7 +50,7 @@ public class AuthController extends BaseController {
             throw new RequestBodyValidationError(errors);
         }
 
-        authService.register(registerUserDto);
+        userService.register(registerUserDto);
 
         request.login(registerUserDto.getEmail(), registerUserDto.getPassword());
 

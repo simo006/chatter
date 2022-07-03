@@ -2,7 +2,10 @@ package com.project.chatter.service.impl;
 
 import com.project.chatter.model.dto.RegisterUserDto;
 import com.project.chatter.model.dto.UserDetailsDto;
+import com.project.chatter.model.entity.Role;
 import com.project.chatter.model.entity.User;
+import com.project.chatter.model.enums.RoleType;
+import com.project.chatter.repository.RoleRepository;
 import com.project.chatter.repository.UserRepository;
 import com.project.chatter.service.AuthService;
 import org.modelmapper.ModelMapper;
@@ -18,11 +21,13 @@ import java.util.List;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthServiceImpl(UserRepository userRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
+    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.modelMapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -32,12 +37,10 @@ public class AuthServiceImpl implements AuthService {
         User user = modelMapper.map(registerUserDto, User.class);
         user.setPassword(passwordEncoder.encode(registerUserDto.getPassword()));
 
-        userRepository.save(user);
-    }
+        Role role = roleRepository.findRoleByRole(RoleType.USER);
+        user.setRoles(List.of(role));
 
-    @Override
-    public boolean isEmailFree(String email) {
-        return !userRepository.existsByEmail(email);
+        userRepository.save(user);
     }
 
     @Override

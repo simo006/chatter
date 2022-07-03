@@ -14,12 +14,11 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -45,11 +44,12 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests()
-                    .mvcMatchers("/auth/register", "/auth/test").permitAll()
+                    .mvcMatchers("/auth/register").permitAll()
                     .anyRequest().authenticated()
                 .and()
                     .addFilterBefore(emailPasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .formLogin().loginProcessingUrl("/auth/login").permitAll()
+                    .failureHandler(getAuthenticationFailureHandler())
                 .and()
                     .logout().logoutUrl("/auth/logout").permitAll()
                     .logoutSuccessHandler(getLogoutSuccessHandler())
@@ -57,7 +57,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                     .cors()
                 .and()
                     .csrf()
-                    .disable();
+                    .disable()
+                .exceptionHandling().authenticationEntryPoint(new Http403ForbiddenEntryPoint());
 
         return http.build();
     }
@@ -101,14 +102,14 @@ public class WebSecurityConfig implements WebMvcConfigurer {
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
-            UserDetailsDto principal = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            UserDetailsDto principal = (UserDetailsDto) authentication.getPrincipal();
             UserDataView userDataView = new UserDataView(principal.getEmail(), principal.getFirstName(),
                     principal.getLastName(), principal.getAge());
 
             SuccessView successView = new SuccessView(
                     HttpStatus.OK.value(),
                     HttpStatus.OK.getReasonPhrase(),
-                    "Successful login.",
+                    "Successful login",
                     request.getServletPath(),
                     userDataView
             );

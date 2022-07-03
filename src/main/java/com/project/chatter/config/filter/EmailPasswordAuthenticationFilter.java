@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ public class EmailPasswordAuthenticationFilter extends UsernamePasswordAuthentic
                     .readValue(request.getInputStream(), EmailAndPasswordDto.class);
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(userData.getEmail(), userData.getPassword());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             return authenticationProvider.authenticate(authentication);
         } catch (IOException e) {
