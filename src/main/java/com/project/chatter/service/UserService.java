@@ -7,4 +7,5 @@ public interface UserService {
 
     void populateUsers();
 
+    boolean isEmailFree(String email);
 }

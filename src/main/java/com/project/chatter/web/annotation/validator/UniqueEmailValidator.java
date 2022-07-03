@@ -1,6 +1,6 @@
 package com.project.chatter.web.annotation.validator;
 
-import com.project.chatter.service.AuthService;
+import com.project.chatter.service.UserService;
 import com.project.chatter.web.annotation.UniqueEmail;
 
 import javax.validation.ConstraintValidator;
@@ -8,14 +8,14 @@ import javax.validation.ConstraintValidatorContext;
 
 public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, String> {
 
-    private final AuthService authService;
+    private final UserService userService;
 
-    public UniqueEmailValidator(AuthService authService) {
-        this.authService = authService;
+    public UniqueEmailValidator(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
     public boolean isValid(String email, ConstraintValidatorContext context) {
-        return email == null || email.isBlank() || authService.isEmailFree(email);
+        return email == null || email.isBlank() || userService.isEmailFree(email);
     }
 }
