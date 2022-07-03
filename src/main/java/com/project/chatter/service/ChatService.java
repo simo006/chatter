@@ -1,5 +1,6 @@
 package com.project.chatter.service;
 
+import com.project.chatter.model.dto.UserDetailsDto;
 import com.project.chatter.model.view.chat.ChatDetailsView;
 import com.project.chatter.model.view.chat.ChatView;
 import com.project.chatter.model.view.chat.MessageView;
@@ -14,5 +15,5 @@ public interface ChatService {
 
     ChatDetailsView getChat(Long chatId);
 
-    MessageView sendMessage(Long chatId, String message);
+    MessageView sendMessage(Long chatId, String message, UserDetailsDto userDetailsDto);
 }

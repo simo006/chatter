@@ -129,8 +129,9 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
 
         List<MessageView> messages = new ArrayList<>(chatRoom.getMessages().stream()
-                .map(message -> mapMessageToMessageView(message, currentUser.getEmail()))
+                .map(this::mapMessageToMessageView)
                 .toList());
+        Collections.reverse(messages);
 
         List<String> members = chatRoom.getMembers().stream()
                 .map(user -> getNames(user.getFirstName(), user.getLastName()))
@@ -140,36 +141,36 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public MessageView sendMessage(Long chatId, String messageText) {
-        User currentUser = getCurrentUser();
+    public MessageView sendMessage(Long chatId, String messageText, UserDetailsDto userDetailsDto) {
+        User currentUser = getCurrentUser(userDetailsDto);
+
         ChatRoom chatRoom = chatRoomRepository.findById(chatId)
                 .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
 
         Message message = new Message(messageText, currentUser, chatRoom);
         messageRepository.save(message);
 
-        return mapMessageToMessageView(message, currentUser.getEmail());
+        return mapMessageToMessageView(message);
     }
 
-    private MessageView mapMessageToMessageView(Message message, String currentUserEmail) {
+    private MessageView mapMessageToMessageView(Message message) {
         User sender = message.getAddedUser();
-        MessageView messageView = new MessageView(message.getId(),
-                getNames(sender.getFirstName(), sender.getLastName()), message.getMessage(), message.getAddedDate());
 
-        if (sender.getEmail().equals(currentUserEmail)) {
-            messageView.setCurrentUser(true);
-        }
-
-        return messageView;
+        return new MessageView(message.getId(), getNames(sender.getFirstName(), sender.getLastName()),
+                sender.getEmail(), message.getMessage(), message.getAddedDate());
     }
 
     private String getNames(String firstName, String lastName) {
         return String.format("%s %s", firstName, lastName);
     }
 
-    private User getCurrentUser() {
-        UserDetailsDto principal = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    private User getCurrentUser(UserDetailsDto userDetailsDto) {
+        return userRepository.findByEmail(userDetailsDto.getEmail()).get();
+    }
 
-        return userRepository.findByEmail(principal.getEmail()).get();
+    private User getCurrentUser() {
+        UserDetailsDto userDetailsDto = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return getCurrentUser(userDetailsDto);
     }
 }

@@ -6,13 +6,14 @@ public class MessageView {
 
     private Long id;
     private String sender;
+    private String senderEmail;
     private String message;
     private LocalDateTime dateTimeSent;
-    private boolean isCurrentUser;
 
-    public MessageView(Long id, String sender, String message, LocalDateTime dateTimeSent) {
+    public MessageView(Long id, String sender, String senderEmail, String message, LocalDateTime dateTimeSent) {
         this.id = id;
         this.sender = sender;
+        this.senderEmail = senderEmail;
         this.message = message;
         this.dateTimeSent = dateTimeSent;
     }
@@ -35,6 +36,15 @@ public class MessageView {
         return this;
     }
 
+    public String getSenderEmail() {
+        return senderEmail;
+    }
+
+    public MessageView setSenderEmail(String senderEmail) {
+        this.senderEmail = senderEmail;
+        return this;
+    }
+
     public String getMessage() {
         return message;
     }
@@ -50,15 +60,6 @@ public class MessageView {
 
     public MessageView setDateTimeSent(LocalDateTime dateTimeSent) {
         this.dateTimeSent = dateTimeSent;
-        return this;
-    }
-
-    public boolean isCurrentUser() {
-        return isCurrentUser;
-    }
-
-    public MessageView setCurrentUser(boolean currentUser) {
-        isCurrentUser = currentUser;
         return this;
     }
 }
