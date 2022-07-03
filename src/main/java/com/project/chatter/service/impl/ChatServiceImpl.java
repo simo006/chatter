@@ -74,3 +74,86 @@ public class ChatServiceImpl implements ChatService {
         return LocalDateTime.ofInstant(Instant.ofEpochSecond(ThreadLocalRandom.current().nextInt()), ZoneOffset.UTC);
     }
 
+    @Override
+    @Transactional
+    public List<ChatView> getChats() {
+        UserDetailsDto principal = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(principal.getEmail()).get();
+
+        return user.getChatRooms().stream()
+                .map(chatRoom -> mapToChatView(chatRoom, user))
+                .collect(Collectors.toList());
+    }
+
+    private ChatView mapToChatView(ChatRoom chatRoom, User currentUser) {
+        ChatView chatView = new ChatView();
+
+        chatView.setId(chatRoom.getId());
+        chatView.setNames(getChatRoomName(chatRoom, currentUser.getEmail()));
+
+        if (chatRoom.getMessages() != null && !chatRoom.getMessages().isEmpty()) {
+            Message lastMessage = messageRepository.findFirstByChatRoomOrderByAddedDateDesc(chatRoom).get();
+            User lastMessageSender = lastMessage.getAddedUser();
+
+            if (lastMessageSender.getEmail().equals(currentUser.getEmail())) {
+                chatView.setSender("You");
+            } else {
+                chatView.setSender(lastMessage.getAddedUser().getFirstName());
+            }
+
+            chatView.setLastMessage(lastMessage.getMessage());
+            chatView.setDateTimeSent(lastMessage.getAddedDate());
+        }
+
+        return chatView;
+    }
+
+    private String getChatRoomName(ChatRoom chatRoom, String currentUserEmail) {
+        if (chatRoom.getType() == ChatRoomType.GROUP) {
+            return chatRoom.getName();
+        }
+
+        User otherUser = chatRoom.getMembers().stream()
+                .filter(user -> !user.getEmail().equals(currentUserEmail))
+                .findAny()
+                .get();
+
+        return getNames(otherUser.getFirstName(), otherUser.getLastName());
+    }
+
+    @Override
+    @Transactional
+    public ChatDetailsView getChat(Long chatId) {
+        UserDetailsDto principal = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User currentUser = userRepository.findByEmail(principal.getEmail()).get();
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatId)
+                .orElseThrow(() -> {throw new NotFoundError("The requested chat were not found!");});
+
+        List<MessageView> messages = new ArrayList<>(chatRoom.getMessages().stream()
+                .map(this::mapMessageToMessageView)
+                .toList());
+        Collections.reverse(messages);
+
+        List<String> members = chatRoom.getMembers().stream()
+                .map(user -> getNames(user.getFirstName(), user.getLastName()))
+                .toList();
+
+        return new ChatDetailsView(members, getChatRoomName(chatRoom, currentUser.getEmail()), messages);
+    }
+
+    private MessageView mapMessageToMessageView(Message message) {
+        User sender = message.getAddedUser();
+
+        return new MessageView(
+                message.getId(),
+                getNames(sender.getFirstName(), sender.getLastName()),
+                message.getMessage(),
+                message.getAddedDate()
+        );
+    }
+
+    private String getNames(String firstName, String lastName) {
+        return String.format("%s %s", firstName, lastName);
+    }
+}

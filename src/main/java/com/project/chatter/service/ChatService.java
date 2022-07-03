@@ -9,4 +9,7 @@ public interface ChatService {
 
     void populateChatRoomAndMessages();
 
+    List<ChatView> getChats();
+
+    ChatDetailsView getChat(Long chatId);
 }
