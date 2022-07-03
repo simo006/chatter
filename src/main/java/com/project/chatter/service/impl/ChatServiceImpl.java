@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -128,10 +127,10 @@ public class ChatServiceImpl implements ChatService {
         User currentUser = userRepository.findByEmail(principal.getEmail()).get();
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatId)
-                .orElseThrow(() -> {throw new NotFoundError("The requested chat were not found!");});
+                .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
 
         List<MessageView> messages = new ArrayList<>(chatRoom.getMessages().stream()
-                .map(this::mapMessageToMessageView)
+                .map(message -> mapMessageToMessageView(message, currentUser.getEmail()))
                 .toList());
         Collections.reverse(messages);
 
@@ -139,18 +138,19 @@ public class ChatServiceImpl implements ChatService {
                 .map(user -> getNames(user.getFirstName(), user.getLastName()))
                 .toList();
 
-        return new ChatDetailsView(members, getChatRoomName(chatRoom, currentUser.getEmail()), messages);
+        return new ChatDetailsView(chatId, members, getChatRoomName(chatRoom, currentUser.getEmail()), messages);
     }
 
-    private MessageView mapMessageToMessageView(Message message) {
+    private MessageView mapMessageToMessageView(Message message, String currentUserEmail) {
         User sender = message.getAddedUser();
+        MessageView messageView = new MessageView(message.getId(),
+                getNames(sender.getFirstName(), sender.getLastName()), message.getMessage(), message.getAddedDate());
 
-        return new MessageView(
-                message.getId(),
-                getNames(sender.getFirstName(), sender.getLastName()),
-                message.getMessage(),
-                message.getAddedDate()
-        );
+        if (sender.getEmail().equals(currentUserEmail)) {
+            messageView.setCurrentUser(true);
+        }
+
+        return messageView;
     }
 
     private String getNames(String firstName, String lastName) {

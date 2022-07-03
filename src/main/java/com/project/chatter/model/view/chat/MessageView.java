@@ -8,6 +8,7 @@ public class MessageView {
     private String sender;
     private String message;
     private LocalDateTime dateTimeSent;
+    private boolean isCurrentUser;
 
     public MessageView(Long id, String sender, String message, LocalDateTime dateTimeSent) {
         this.id = id;
@@ -49,6 +50,15 @@ public class MessageView {
 
     public MessageView setDateTimeSent(LocalDateTime dateTimeSent) {
         this.dateTimeSent = dateTimeSent;
+        return this;
+    }
+
+    public boolean isCurrentUser() {
+        return isCurrentUser;
+    }
+
+    public MessageView setCurrentUser(boolean currentUser) {
+        isCurrentUser = currentUser;
         return this;
     }
 }
