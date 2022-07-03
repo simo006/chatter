@@ -22,11 +22,24 @@ public class Message extends BaseEntity {
     public Message() {
     }
 
+    public Message(String message, User addedUser, ChatRoom chatRoom) {
+        this.message = message;
+        this.addedUser = addedUser;
+        this.chatRoom = chatRoom;
+    }
+
     public Message(String message, User addedUser, ChatRoom chatRoom, LocalDateTime addedDate) {
         this.message = message;
         this.addedUser = addedUser;
         this.chatRoom = chatRoom;
         this.addedDate = addedDate;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (addedDate == null) {
+            addedDate = LocalDateTime.now();
+        }
     }
 
     public String getMessage() {

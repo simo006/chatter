@@ -42,12 +42,7 @@ public class AuthController extends BaseController {
     public ResponseEntity<SuccessView> register(@Valid @RequestBody RegisterUserDto registerUserDto,
                                                 BindingResult bindingResult, HttpServletRequest request) throws ServletException {
         if (bindingResult.hasErrors()) {
-            List<FieldErrorView> errors = bindingResult
-                    .getFieldErrors().stream()
-                    .map(violation -> mapError(violation.getField(), violation.getDefaultMessage()))
-                    .toList();
-
-            throw new RequestBodyValidationError(errors);
+            throwRequestBodyValidationError(bindingResult);
         }
 
         userService.register(registerUserDto);

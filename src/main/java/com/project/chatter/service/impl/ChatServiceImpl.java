@@ -76,11 +76,10 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public List<ChatView> getChats() {
-        UserDetailsDto principal = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findByEmail(principal.getEmail()).get();
+        User currentUser = getCurrentUser();
 
-        return user.getChatRooms().stream()
-                .map(chatRoom -> mapToChatView(chatRoom, user))
+        return currentUser.getChatRooms().stream()
+                .map(chatRoom -> mapToChatView(chatRoom, currentUser))
                 .collect(Collectors.toList());
     }
 
@@ -91,7 +90,8 @@ public class ChatServiceImpl implements ChatService {
         chatView.setNames(getChatRoomName(chatRoom, currentUser.getEmail()));
 
         if (chatRoom.getMessages() != null && !chatRoom.getMessages().isEmpty()) {
-            Message lastMessage = messageRepository.findFirstByChatRoomOrderByAddedDateDesc(chatRoom).get();
+            Message lastMessage = messageRepository.findFirstByChatRoomOrderByIdDesc(chatRoom)
+                    .orElseThrow(() -> new NotFoundError("Chat not found"));
             User lastMessageSender = lastMessage.getAddedUser();
 
             if (lastMessageSender.getEmail().equals(currentUser.getEmail())) {
@@ -123,8 +123,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public ChatDetailsView getChat(Long chatId) {
-        UserDetailsDto principal = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currentUser = userRepository.findByEmail(principal.getEmail()).get();
+        User currentUser = getCurrentUser();
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatId)
                 .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
@@ -132,13 +131,24 @@ public class ChatServiceImpl implements ChatService {
         List<MessageView> messages = new ArrayList<>(chatRoom.getMessages().stream()
                 .map(message -> mapMessageToMessageView(message, currentUser.getEmail()))
                 .toList());
-        Collections.reverse(messages);
 
         List<String> members = chatRoom.getMembers().stream()
                 .map(user -> getNames(user.getFirstName(), user.getLastName()))
                 .toList();
 
         return new ChatDetailsView(chatId, members, getChatRoomName(chatRoom, currentUser.getEmail()), messages);
+    }
+
+    @Override
+    public MessageView sendMessage(Long chatId, String messageText) {
+        User currentUser = getCurrentUser();
+        ChatRoom chatRoom = chatRoomRepository.findById(chatId)
+                .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
+
+        Message message = new Message(messageText, currentUser, chatRoom);
+        messageRepository.save(message);
+
+        return mapMessageToMessageView(message, currentUser.getEmail());
     }
 
     private MessageView mapMessageToMessageView(Message message, String currentUserEmail) {
@@ -155,5 +165,11 @@ public class ChatServiceImpl implements ChatService {
 
     private String getNames(String firstName, String lastName) {
         return String.format("%s %s", firstName, lastName);
+    }
+
+    private User getCurrentUser() {
+        UserDetailsDto principal = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return userRepository.findByEmail(principal.getEmail()).get();
     }
 }

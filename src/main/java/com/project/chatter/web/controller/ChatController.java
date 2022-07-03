@@ -1,15 +1,19 @@
 package com.project.chatter.web.controller;
 
+import com.project.chatter.model.dto.SendMessageDto;
+import com.project.chatter.model.view.basic.FieldErrorView;
 import com.project.chatter.model.view.chat.ChatDetailsView;
 import com.project.chatter.model.view.chat.ChatView;
 import com.project.chatter.model.view.basic.SuccessView;
+import com.project.chatter.model.view.chat.MessageView;
 import com.project.chatter.service.ChatService;
+import com.project.chatter.web.exception.IllegalArgumentError;
+import com.project.chatter.web.exception.RequestBodyValidationError;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -42,5 +46,16 @@ public class ChatController extends BaseController {
         }
 
         return ResponseEntity.ok(okView("Extracted chat info", chatDetailsView));
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<SuccessView> sendMessage(@RequestBody @Valid SendMessageDto sendMessageDto,
+                                                   BindingResult bindingResult, @PathVariable("id") Long chatId) {
+        if (bindingResult.hasErrors()) {
+            throwRequestBodyValidationError(bindingResult);
+        }
+
+        return ResponseEntity.ok(okView("Chat data saved",
+                chatService.sendMessage(chatId, sendMessageDto.getMessage())));
     }
 }
