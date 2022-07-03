@@ -40,6 +40,17 @@ public class User extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "chat_room_id"))
     private List<ChatRoom> chatRooms;
 
+    public User() {
+    }
+
+    public User(String email, String password, String firstName, String lastName, Integer age) {
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+    }
+
     public String getEmail() {
         return email;
     }

@@ -12,9 +12,15 @@ import javax.validation.constraints.NotNull;
 @Table(name = "roles")
 public class Role extends BaseEntity {
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private RoleType role;
+
+    public Role() {
+    }
+
+    public Role(RoleType role) {
+        this.role = role;
+    }
 
     public RoleType getRole() {
         return role;
