@@ -153,6 +153,14 @@ public class ChatServiceImpl implements ChatService {
         return mapMessageToMessageView(message);
     }
 
+    @Override
+    public boolean isSubscriptionValid(long chatId, String currentUserEmail) {
+        List<ChatRoom> chatRooms = userRepository.findAllChatRoomsByUserEmail(currentUserEmail)
+                .orElseThrow(() -> new NotFoundError("No chat found"));
+
+        return chatRooms.stream().anyMatch(c -> c.getId() == chatId);
+    }
+
     private MessageView mapMessageToMessageView(Message message) {
         User sender = message.getAddedUser();
 
