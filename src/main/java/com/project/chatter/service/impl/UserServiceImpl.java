@@ -5,10 +5,13 @@ import com.project.chatter.model.entity.User;
 import com.project.chatter.model.enums.RoleType;
 import com.project.chatter.repository.RoleRepository;
 import com.project.chatter.repository.UserRepository;
+import com.project.chatter.service.ChatService;
 import com.project.chatter.service.UserService;
+import com.project.chatter.web.exception.NotFoundError;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -16,11 +19,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final ChatService chatService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, ChatService chatService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.chatService = chatService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -44,5 +49,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isEmailFree(String email) {
         return !userRepository.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public List<String> getUserRooms(String email) {
+        return List.of(
+                "/friends/status",
+                "/friends/request"
+        );
+    }
+
+    @Override
+    @Transactional
+    public List<String> getUserChatRooms(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundError::new);
+
+        List<String> userChatRooms = user.getChatRooms().stream()
+                .map(r -> chatService.getChatRoomSubscriptionName(r.getId()))
+                .toList();
+
+        return userChatRooms;
     }
 }

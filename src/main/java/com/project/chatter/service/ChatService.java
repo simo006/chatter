@@ -18,4 +18,6 @@ public interface ChatService {
     MessageView sendMessage(Long chatId, String message, UserDetailsDto userDetailsDto);
 
     boolean isSubscriptionValid(long chatId, String currentUserEmail);
+
+    String getChatRoomSubscriptionName(long chatId);
 }

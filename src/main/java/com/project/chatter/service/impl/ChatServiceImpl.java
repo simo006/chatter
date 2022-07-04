@@ -161,6 +161,11 @@ public class ChatServiceImpl implements ChatService {
         return chatRooms.stream().anyMatch(c -> c.getId() == chatId);
     }
 
+    @Override
+    public String getChatRoomSubscriptionName(long chatId) {
+        return String.format("/chat-room/%d/messages", chatId);
+    }
+
     private MessageView mapMessageToMessageView(Message message) {
         User sender = message.getAddedUser();
 
