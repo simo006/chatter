@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 @Component
 public class ChatRoomChannelInterceptorImpl implements ChatRoomChannelInterceptor {
 
+    private static final long SUBSCRIPTION_PATH_MISMATCH = -1;
     private final ChatService chatService;
 
     public ChatRoomChannelInterceptorImpl(ChatService chatService) {
@@ -27,10 +28,9 @@ public class ChatRoomChannelInterceptorImpl implements ChatRoomChannelIntercepto
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(message);
         if (StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())) {
             String currentUserEmail = headerAccessor.getUser().getName();
-            long chatId = extractChatId(headerAccessor.getDestination())
-                    .orElseThrow(() -> new NotFoundError("No chat found"));
+            long chatId = extractChatId(headerAccessor.getDestination()).orElse(SUBSCRIPTION_PATH_MISMATCH);
 
-            if (!chatService.isSubscriptionValid(chatId, currentUserEmail)) {
+            if (chatId != SUBSCRIPTION_PATH_MISMATCH && !chatService.isSubscriptionValid(chatId, currentUserEmail)) {
                 throw new NotFoundError("No chat found");
             }
         }
