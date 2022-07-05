@@ -4,6 +4,7 @@ import com.project.chatter.model.enums.ChatRoomType;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "chat_rooms")
@@ -20,6 +21,12 @@ public class ChatRoom extends BaseEntity {
 
     @OneToMany(mappedBy = "chatRoom")
     private List<Message> messages;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "chat_rooms_seen_users",
+            joinColumns = @JoinColumn(name = "chat_room_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> seenUsers;
 
     public ChatRoom() {
     }
@@ -70,6 +77,15 @@ public class ChatRoom extends BaseEntity {
 
     public ChatRoom setMessages(List<Message> messages) {
         this.messages = messages;
+        return this;
+    }
+
+    public Set<User> getSeenUsers() {
+        return seenUsers;
+    }
+
+    public ChatRoom setSeenUsers(Set<User> seenUsers) {
+        this.seenUsers = seenUsers;
         return this;
     }
 }

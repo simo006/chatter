@@ -9,6 +9,7 @@ public class ChatView {
     private String lastMessage;
     private String sender;
     private LocalDateTime dateTimeSent;
+    private boolean seen;
 
     public Long getId() {
         return id;
@@ -52,6 +53,15 @@ public class ChatView {
 
     public ChatView setDateTimeSent(LocalDateTime dateTimeSent) {
         this.dateTimeSent = dateTimeSent;
+        return this;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public ChatView setSeen(boolean seen) {
+        this.seen = seen;
         return this;
     }
 }

@@ -8,12 +8,14 @@ public class ChatDetailsView {
     private List<String> members;
     private String name;
     private List<MessageView> messages;
+    private List<String> seenBy;
 
-    public ChatDetailsView(Long id, List<String> members, String name, List<MessageView> messages) {
+    public ChatDetailsView(Long id, List<String> members, String name, List<MessageView> messages, List<String> seenBy) {
         this.id = id;
         this.members = members;
         this.name = name;
         this.messages = messages;
+        this.seenBy = seenBy;
     }
 
     public Long getId() {
@@ -49,6 +51,15 @@ public class ChatDetailsView {
 
     public ChatDetailsView setMessages(List<MessageView> messages) {
         this.messages = messages;
+        return this;
+    }
+
+    public List<String> getSeenBy() {
+        return seenBy;
+    }
+
+    public ChatDetailsView setSeenBy(List<String> seenBy) {
+        this.seenBy = seenBy;
         return this;
     }
 }

@@ -4,6 +4,7 @@ import com.project.chatter.model.dto.UserDetailsDto;
 import com.project.chatter.model.view.chat.ChatDetailsView;
 import com.project.chatter.model.view.chat.ChatView;
 import com.project.chatter.model.view.chat.MessageView;
+import com.project.chatter.model.view.chat.SeenChatView;
 
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface ChatService {
     boolean isSubscriptionValid(long chatId, String currentUserEmail);
 
     String getChatRoomSubscriptionName(long chatId);
+
+    SeenChatView seenChat(Long chatId, String userEmail);
 }

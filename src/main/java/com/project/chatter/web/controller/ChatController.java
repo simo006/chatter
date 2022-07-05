@@ -63,5 +63,10 @@ public class ChatController extends BaseController {
         SendMessageDto messageDto = message.getPayload();
 
         return chatService.sendMessage(chatId, messageDto.getMessage(), userDetailsDto);
+
+    @MessageMapping("/chat-room/{id}/seen")
+    @SendTo("/chat-room/{id}/messages")
+    public SeenChatView sendMessageNotificationToUsersInRoom(@DestinationVariable(value = "id") Long chatId, Principal principal) {
+        return chatService.seenChat(chatId, principal.getName());
     }
 }

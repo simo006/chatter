@@ -8,6 +8,7 @@ import com.project.chatter.model.enums.ChatRoomType;
 import com.project.chatter.model.view.chat.ChatDetailsView;
 import com.project.chatter.model.view.chat.ChatView;
 import com.project.chatter.model.view.chat.MessageView;
+import com.project.chatter.model.view.chat.SeenChatView;
 import com.project.chatter.repository.ChatRoomRepository;
 import com.project.chatter.repository.MessageRepository;
 import com.project.chatter.repository.UserRepository;
@@ -102,6 +103,13 @@ public class ChatServiceImpl implements ChatService {
 
             chatView.setLastMessage(lastMessage.getMessage());
             chatView.setDateTimeSent(lastMessage.getAddedDate());
+
+            boolean isUserSeenChat = chatRoom.getSeenUsers().stream()
+                    .anyMatch(user -> user.getEmail().equals(currentUser.getEmail()));
+
+            if (isUserSeenChat) {
+                chatView.setSeen(true);
+            }
         }
 
         return chatView;
@@ -137,15 +145,27 @@ public class ChatServiceImpl implements ChatService {
                 .map(user -> getNames(user.getFirstName(), user.getLastName()))
                 .toList();
 
-        return new ChatDetailsView(chatId, members, getChatRoomName(chatRoom, currentUser.getEmail()), messages);
+        List<String> seenByNames = chatRoom.getSeenUsers().stream()
+                .filter(user -> !user.getEmail().equals(currentUser.getEmail()))
+                .map(user -> getNames(user.getFirstName(), user.getLastName()))
+                .toList();
+
+        ChatDetailsView chatDetailsView = new ChatDetailsView(chatId, members,
+                getChatRoomName(chatRoom, currentUser.getEmail()), messages, seenByNames);
+
+
+        return chatDetailsView;
     }
 
     @Override
-    public MessageView sendMessage(Long chatId, String messageText, UserDetailsDto userDetailsDto) {
-        User currentUser = getCurrentUser(userDetailsDto);
+    @Transactional
+    public MessageView sendMessage(Long chatId, String messageText, String senderEmail) {
+        User currentUser = getCurrentUser(senderEmail, userRepository);
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatId)
-                .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
+                .orElseThrow(() -> new NotFoundError("Chat not found"));
+        chatRoom.setSeenUsers(null);
+        chatRoomRepository.saveAndFlush(chatRoom);
 
         Message message = new Message(messageText, currentUser, chatRoom);
         messageRepository.save(message);
@@ -176,14 +196,23 @@ public class ChatServiceImpl implements ChatService {
     private String getNames(String firstName, String lastName) {
         return String.format("%s %s", firstName, lastName);
     }
+    @Override
+    @Transactional
+    public SeenChatView seenChat(Long chatId, String userEmail) {
+        User user = getCurrentUser(userEmail, userRepository);
+        ChatRoom chatRoom = chatRoomRepository.findById(chatId)
+                .orElseThrow(() -> new NotFoundError("Chat not found"));
 
     private User getCurrentUser(UserDetailsDto userDetailsDto) {
         return userRepository.findByEmail(userDetailsDto.getEmail()).get();
     }
+        chatRoom.getSeenUsers().add(user);
 
     private User getCurrentUser() {
         UserDetailsDto userDetailsDto = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        chatRoomRepository.save(chatRoom);
 
         return getCurrentUser(userDetailsDto);
+        return new SeenChatView(userEmail, getNames(user.getFirstName(), user.getLastName()), chatId);
     }
 }
