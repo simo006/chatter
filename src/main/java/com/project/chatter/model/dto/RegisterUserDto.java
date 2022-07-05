@@ -39,6 +39,18 @@ public class RegisterUserDto {
     @NotNull
     private Integer age;
 
+    public RegisterUserDto(String email, String password, String confirmPassword, String firstName, String lastName, Integer age) {
+        this.email = email;
+        this.password = password;
+        this.confirmPassword = confirmPassword;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+    }
+
+    public RegisterUserDto() {
+    }
+
     public String getEmail() {
         return email;
     }
