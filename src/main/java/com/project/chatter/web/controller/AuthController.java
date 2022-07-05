@@ -21,10 +21,12 @@ public class AuthController extends BaseController {
 
     private final AuthService authService;
     private final UserService userService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public AuthController(AuthService authService, UserService userService) {
+    public AuthController(AuthService authService, UserService userService, SimpMessagingTemplate simpMessagingTemplate) {
         this.authService = authService;
         this.userService = userService;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @PostMapping("/register")
@@ -56,5 +58,19 @@ public class AuthController extends BaseController {
         List<String> userChatRooms = userService.getUserChatRooms(principal.getName());
 
         return ResponseEntity.ok(okView("User chat rooms", userChatRooms));
+    }
+
+    @MessageMapping("/friends/status")
+    public void sendStatusNotificationToAllFriends(Principal principal, @Payload @Valid Message<StatusChangeDto> message) {
+        List<String> friendsEmails = userService.getUserFriendsEmails(principal.getName());
+
+        friendsEmails.forEach(email -> simpMessagingTemplate.convertAndSendToUser(email, "/queue/status", message));
+    }
+
+    @MessageMapping("/friend/status")
+    public void sendStatusNotificationToFriend(@Payload @Valid Message<StatusChangeDto> message) {
+        StatusChangeDto statusChangeDto = message.getPayload();
+
+        simpMessagingTemplate.convertAndSendToUser(statusChangeDto.getSendTo(), "/queue/status", message);
     }
 }

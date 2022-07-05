@@ -7,6 +7,7 @@ public class ChatDetailsView {
     private Long id;
     private List<String> members;
     private String name;
+    private String email;
     private List<MessageView> messages;
     private List<String> seenBy;
 
@@ -42,6 +43,15 @@ public class ChatDetailsView {
 
     public ChatDetailsView setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public ChatDetailsView setEmail(String email) {
+        this.email = email;
         return this;
     }
 

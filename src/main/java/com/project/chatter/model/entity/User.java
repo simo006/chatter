@@ -32,7 +32,7 @@ public class User extends BaseEntity {
     @JoinTable(name = "users_friends",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
-    private List<ChatRoom> friends;
+    private List<User> friends;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "users_chat_rooms",
@@ -105,11 +105,11 @@ public class User extends BaseEntity {
         return this;
     }
 
-    public List<ChatRoom> getFriends() {
+    public List<User> getFriends() {
         return friends;
     }
 
-    public User setFriends(List<ChatRoom> friends) {
+    public User setFriends(List<User> friends) {
         this.friends = friends;
         return this;
     }

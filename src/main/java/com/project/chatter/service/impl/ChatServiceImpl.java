@@ -104,6 +104,16 @@ public class ChatServiceImpl implements ChatService {
             chatView.setLastMessage(lastMessage.getMessage());
             chatView.setDateTimeSent(lastMessage.getAddedDate());
 
+            // to check if the current user is online
+            List<String> otherUsersEmails = chatRoom.getMembers().stream()
+                    .map(User::getEmail)
+                    .filter(email -> !email.equals(currentUser.getEmail()))
+                    .toList();
+
+            if (otherUsersEmails.size() == 1) {
+                chatView.setEmail(otherUsersEmails.get(0));
+            }
+
             boolean isUserSeenChat = chatRoom.getSeenUsers().stream()
                     .anyMatch(user -> user.getEmail().equals(currentUser.getEmail()));
 
@@ -154,6 +164,16 @@ public class ChatServiceImpl implements ChatService {
                 getChatRoomName(chatRoom, currentUser.getEmail()), messages, seenByNames);
 
 
+        // to check if the current user is online
+        List<String> otherUsersEmails = chatRoom.getMembers().stream()
+                .map(User::getEmail)
+                .filter(email -> !email.equals(currentUser.getEmail()))
+                .toList();
+
+        if (otherUsersEmails.size() == 1) {
+            chatDetailsView.setEmail(otherUsersEmails.get(0));
+        }
+
         return chatDetailsView;
     }
 
@@ -189,8 +209,8 @@ public class ChatServiceImpl implements ChatService {
     private MessageView mapMessageToMessageView(Message message) {
         User sender = message.getAddedUser();
 
-        return new MessageView(message.getId(), getNames(sender.getFirstName(), sender.getLastName()),
-                sender.getEmail(), message.getMessage(), message.getAddedDate());
+        return new MessageView(message.getId(), message.getChatRoom().getId(), getNames(sender.getFirstName(),
+                sender.getLastName()), sender.getEmail(), message.getMessage(), message.getAddedDate());
     }
 
     private String getNames(String firstName, String lastName) {

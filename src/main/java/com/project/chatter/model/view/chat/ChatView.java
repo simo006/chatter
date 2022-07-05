@@ -6,6 +6,7 @@ public class ChatView {
 
     private Long id;
     private String names;
+    private String email;
     private String lastMessage;
     private String sender;
     private LocalDateTime dateTimeSent;
@@ -26,6 +27,15 @@ public class ChatView {
 
     public ChatView setNames(String names) {
         this.names = names;
+        return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public ChatView setEmail(String email) {
+        this.email = email;
         return this;
     }
 
