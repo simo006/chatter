@@ -1,6 +1,5 @@
 package com.project.chatter.service.impl;
 
-import com.project.chatter.model.dto.UserDetailsDto;
 import com.project.chatter.model.entity.ChatRoom;
 import com.project.chatter.model.entity.Message;
 import com.project.chatter.model.entity.User;
@@ -14,7 +13,6 @@ import com.project.chatter.repository.MessageRepository;
 import com.project.chatter.repository.UserRepository;
 import com.project.chatter.service.ChatService;
 import com.project.chatter.web.exception.NotFoundError;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -28,7 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Service
-public class ChatServiceImpl implements ChatService {
+public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
 
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
@@ -77,7 +75,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public List<ChatView> getChats() {
-        User currentUser = getCurrentUser();
+        User currentUser = getCurrentUser(userRepository);
 
         return currentUser.getChatRooms().stream()
                 .map(chatRoom -> mapToChatView(chatRoom, currentUser))
@@ -141,7 +139,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public ChatDetailsView getChat(Long chatId) {
-        User currentUser = getCurrentUser();
+        User currentUser = getCurrentUser(userRepository);
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatId)
                 .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
@@ -213,9 +211,6 @@ public class ChatServiceImpl implements ChatService {
                 sender.getLastName()), sender.getEmail(), message.getMessage(), message.getAddedDate());
     }
 
-    private String getNames(String firstName, String lastName) {
-        return String.format("%s %s", firstName, lastName);
-    }
     @Override
     @Transactional
     public SeenChatView seenChat(Long chatId, String userEmail) {
@@ -223,16 +218,10 @@ public class ChatServiceImpl implements ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatId)
                 .orElseThrow(() -> new NotFoundError("Chat not found"));
 
-    private User getCurrentUser(UserDetailsDto userDetailsDto) {
-        return userRepository.findByEmail(userDetailsDto.getEmail()).get();
-    }
         chatRoom.getSeenUsers().add(user);
 
-    private User getCurrentUser() {
-        UserDetailsDto userDetailsDto = (UserDetailsDto) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         chatRoomRepository.save(chatRoom);
 
-        return getCurrentUser(userDetailsDto);
         return new SeenChatView(userEmail, getNames(user.getFirstName(), user.getLastName()), chatId);
     }
 }

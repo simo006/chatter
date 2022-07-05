@@ -15,7 +15,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -62,8 +62,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public List<String> getUserChatRooms(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(NotFoundError::new);
+    public List<String> getUserFriendsEmails(String email) {
+        User currentUser = getCurrentUser(email, userRepository);
 
         List<String> userChatRooms = user.getChatRooms().stream()
                 .map(r -> chatService.getChatRoomSubscriptionName(r.getId()))
