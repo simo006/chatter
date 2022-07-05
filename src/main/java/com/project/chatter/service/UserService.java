@@ -8,7 +8,7 @@ public interface UserService {
 
     boolean isEmailFree(String email);
 
-    List<String> getUserRooms(String email);
-
     List<String> getUserChatRooms(String email);
+
+    List<String> getUserFriendsEmails(String email);
 }

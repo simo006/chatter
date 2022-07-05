@@ -6,6 +6,7 @@ import com.project.chatter.model.view.basic.SuccessView;
 import com.project.chatter.model.view.chat.ChatDetailsView;
 import com.project.chatter.model.view.chat.ChatView;
 import com.project.chatter.model.view.chat.MessageView;
+import com.project.chatter.model.view.chat.SeenChatView;
 import com.project.chatter.service.ChatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
@@ -57,12 +58,12 @@ public class ChatController extends BaseController {
 
     @MessageMapping("/chat-room/{id}")
     @SendTo("/chat-room/{id}/messages")
-    public MessageView handleRequest(@DestinationVariable(value = "id") Long chatId,
-                                     @Payload @Valid Message<SendMessageDto> message, Principal principal) {
-        UserDetailsDto userDetailsDto = (UserDetailsDto) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+    public MessageView sendMessageToUsersInRoom(@DestinationVariable(value = "id") Long chatId,
+                                                @Payload @Valid Message<SendMessageDto> message, Principal principal) {
         SendMessageDto messageDto = message.getPayload();
 
-        return chatService.sendMessage(chatId, messageDto.getMessage(), userDetailsDto);
+        return chatService.sendMessage(chatId, messageDto.getMessage(), principal.getName());
+    }
 
     @MessageMapping("/chat-room/{id}/seen")
     @SendTo("/chat-room/{id}/messages")

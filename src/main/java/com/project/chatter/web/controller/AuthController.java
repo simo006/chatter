@@ -1,11 +1,16 @@
 package com.project.chatter.web.controller;
 
 import com.project.chatter.model.dto.RegisterUserDto;
+import com.project.chatter.model.dto.StatusChangeDto;
 import com.project.chatter.model.view.UserDataView;
 import com.project.chatter.model.view.basic.SuccessView;
 import com.project.chatter.service.AuthService;
 import com.project.chatter.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,13 +49,6 @@ public class AuthController extends BaseController {
                 registerUserDto.getLastName(), registerUserDto.getAge());
 
         return ResponseEntity.ok(okView("Successful registration", userDataView));
-    }
-
-    @GetMapping("/user-rooms")
-    public ResponseEntity<SuccessView> getUserRooms(Principal principal) {
-        List<String> userRooms = userService.getUserRooms(principal.getName());
-
-        return ResponseEntity.ok(okView("User rooms", userRooms));
     }
 
     @GetMapping("/user-chat-rooms")

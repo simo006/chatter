@@ -7,12 +7,12 @@ import com.project.chatter.repository.RoleRepository;
 import com.project.chatter.repository.UserRepository;
 import com.project.chatter.service.ChatService;
 import com.project.chatter.service.UserService;
-import com.project.chatter.web.exception.NotFoundError;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl extends BaseServiceImpl implements UserService {
@@ -53,11 +53,12 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public List<String> getUserRooms(String email) {
-        return List.of(
-                "/friends/status",
-                "/friends/request"
-        );
+    public List<String> getUserChatRooms(String userEmail) {
+        User currentUser = getCurrentUser(userEmail, userRepository);
+
+        return currentUser.getChatRooms().stream()
+                .map(r -> chatService.getChatRoomSubscriptionName(r.getId()))
+                .toList();
     }
 
     @Override
@@ -65,10 +66,9 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
     public List<String> getUserFriendsEmails(String email) {
         User currentUser = getCurrentUser(email, userRepository);
 
-        List<String> userChatRooms = user.getChatRooms().stream()
-                .map(r -> chatService.getChatRoomSubscriptionName(r.getId()))
+        return currentUser.getFriends().stream()
+                .map(User::getEmail)
+                .filter(Objects::nonNull)
                 .toList();
-
-        return userChatRooms;
     }
 }
