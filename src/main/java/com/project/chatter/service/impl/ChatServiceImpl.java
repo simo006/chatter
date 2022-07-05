@@ -12,6 +12,7 @@ import com.project.chatter.repository.ChatRoomRepository;
 import com.project.chatter.repository.MessageRepository;
 import com.project.chatter.repository.UserRepository;
 import com.project.chatter.service.ChatService;
+import com.project.chatter.web.exception.ChatNotFoundError;
 import com.project.chatter.web.exception.NotFoundError;
 import org.springframework.stereotype.Service;
 
@@ -42,27 +43,25 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
     @Transactional
     public void populateChatRoomAndMessages() {
         if (chatRoomRepository.count() == 0) {
-            User user1 = userRepository.findById((long) 1).orElseThrow();
-            User user2 = userRepository.findById((long) 2).orElseThrow();
-            User user3 = userRepository.findById((long) 3).orElseThrow();
+            List<User> users = userRepository.findAllById(List.of(1L, 2L, 3L));
 
-            ChatRoom chatRoom = new ChatRoom(ChatRoomType.PERSONAL, List.of(user1, user2), new ArrayList<>());
-            ChatRoom chatRoom2 = new ChatRoom(ChatRoomType.PERSONAL, List.of(user1, user3), new ArrayList<>());
-            chatRoomRepository.save(chatRoom);
-            chatRoomRepository.save(chatRoom2);
+            List<ChatRoom> chatRooms = List.of(
+                    new ChatRoom(ChatRoomType.PERSONAL, List.of(users.get(0), users.get(1)), new ArrayList<>()),
+                    new ChatRoom(ChatRoomType.PERSONAL, List.of(users.get(0), users.get(2)), new ArrayList<>())
+            );
 
-            user1.setChatRooms(List.of(chatRoom, chatRoom2));
-            user2.setChatRooms(List.of(chatRoom));
-            user3.setChatRooms(List.of(chatRoom2));
+            users.get(0).setChatRooms(List.of(chatRooms.get(0), chatRooms.get(1)));
+            users.get(1).setChatRooms(List.of(chatRooms.get(0)));
+            users.get(2).setChatRooms(List.of(chatRooms.get(1)));
 
             List<Message> messages = List.of(
-                    new Message("Lorem Ipsum is simply dummy text of the printing and typesetting industry.", user1, chatRoom, timestamp()),
-                    new Message("Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.", user1, chatRoom, timestamp()),
-                    new Message("It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.", user2, chatRoom, timestamp()),
-                    new Message("It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.", user3, chatRoom2, timestamp()),
-                    new Message("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages.", user1, chatRoom, timestamp()),
-                    new Message("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages.", user2, chatRoom, timestamp()),
-                    new Message("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages.", user3, chatRoom2, timestamp())
+                    new Message("Lorem Ipsum is simply dummy text of the printing and typesetting industry.", users.get(0), chatRooms.get(0), timestamp()),
+                    new Message("Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.", users.get(0), chatRooms.get(0), timestamp()),
+                    new Message("It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.", users.get(1), chatRooms.get(0), timestamp()),
+                    new Message("It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.", users.get(2), chatRooms.get(1), timestamp()),
+                    new Message("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages.", users.get(0), chatRooms.get(0), timestamp()),
+                    new Message("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages.", users.get(1), chatRooms.get(0), timestamp()),
+                    new Message("It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages.", users.get(2), chatRooms.get(1), timestamp())
             );
             messageRepository.saveAll(messages);
         }
@@ -83,14 +82,18 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
     }
 
     private ChatView mapToChatView(ChatRoom chatRoom, User currentUser) {
-        ChatView chatView = new ChatView();
+        boolean isUserSeenChat = chatRoom.getSeenUsers().stream().anyMatch(user -> user.getEmail().equals(currentUser.getEmail()));
+        
+        ChatView chatView = new ChatView(chatRoom.getId(), getChatRoomName(chatRoom, currentUser.getEmail()), isUserSeenChat);
 
-        chatView.setId(chatRoom.getId());
-        chatView.setNames(getChatRoomName(chatRoom, currentUser.getEmail()));
+        // to check if the other user is online on the client side
+        List<String> otherUsersEmails = getOtherUsersEmails(chatRoom, currentUser);
+        if (otherUsersEmails.size() == 1) {
+            chatView.setOtherUserEmail(otherUsersEmails.get(0));
+        }
 
         if (chatRoom.getMessages() != null && !chatRoom.getMessages().isEmpty()) {
-            Message lastMessage = messageRepository.findFirstByChatRoomOrderByIdDesc(chatRoom)
-                    .orElseThrow(() -> new NotFoundError("Chat not found"));
+            Message lastMessage = messageRepository.findFirstByChatRoomOrderByIdDesc(chatRoom).orElseThrow(ChatNotFoundError::new);
             User lastMessageSender = lastMessage.getAddedUser();
 
             if (lastMessageSender.getEmail().equals(currentUser.getEmail())) {
@@ -101,37 +104,22 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
 
             chatView.setLastMessage(lastMessage.getMessage());
             chatView.setDateTimeSent(lastMessage.getAddedDate());
-
-            // to check if the current user is online
-            List<String> otherUsersEmails = chatRoom.getMembers().stream()
-                    .map(User::getEmail)
-                    .filter(email -> !email.equals(currentUser.getEmail()))
-                    .toList();
-
-            if (otherUsersEmails.size() == 1) {
-                chatView.setEmail(otherUsersEmails.get(0));
-            }
-
-            boolean isUserSeenChat = chatRoom.getSeenUsers().stream()
-                    .anyMatch(user -> user.getEmail().equals(currentUser.getEmail()));
-
-            if (isUserSeenChat) {
-                chatView.setSeen(true);
-            }
         }
 
         return chatView;
     }
 
     private String getChatRoomName(ChatRoom chatRoom, String currentUserEmail) {
+        // Group chats have specific names
         if (chatRoom.getType() == ChatRoomType.GROUP) {
             return chatRoom.getName();
         }
 
+        // User chats have the name of the other user
         User otherUser = chatRoom.getMembers().stream()
                 .filter(user -> !user.getEmail().equals(currentUserEmail))
                 .findAny()
-                .get();
+                .orElseThrow(ChatNotFoundError::new);
 
         return getNames(otherUser.getFirstName(), otherUser.getLastName());
     }
@@ -141,12 +129,12 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
     public ChatDetailsView getChat(Long chatId) {
         User currentUser = getCurrentUser(userRepository);
 
-        ChatRoom chatRoom = chatRoomRepository.findById(chatId)
-                .orElseThrow(() -> new NotFoundError("The requested chat were not found!"));
+        ChatRoom chatRoom = chatRoomRepository.findById(chatId).orElseThrow(ChatNotFoundError::new);
 
         List<MessageView> messages = new ArrayList<>(chatRoom.getMessages().stream()
                 .map(this::mapMessageToMessageView)
                 .toList());
+        // Sort messages in descending order
         Collections.reverse(messages);
 
         List<String> members = chatRoom.getMembers().stream()
@@ -160,19 +148,21 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
 
         ChatDetailsView chatDetailsView = new ChatDetailsView(chatId, members,
                 getChatRoomName(chatRoom, currentUser.getEmail()), messages, seenByNames);
-
-
-        // to check if the current user is online
-        List<String> otherUsersEmails = chatRoom.getMembers().stream()
-                .map(User::getEmail)
-                .filter(email -> !email.equals(currentUser.getEmail()))
-                .toList();
-
+        
+        // to check if the other user is online on the client side
+        List<String> otherUsersEmails = getOtherUsersEmails(chatRoom, currentUser);
         if (otherUsersEmails.size() == 1) {
-            chatDetailsView.setEmail(otherUsersEmails.get(0));
+            chatDetailsView.setOtherUserEmail(otherUsersEmails.get(0));
         }
 
         return chatDetailsView;
+    }
+
+    private List<String> getOtherUsersEmails(ChatRoom chatRoom, User currentUser) {
+        return chatRoom.getMembers().stream()
+                .map(User::getEmail)
+                .filter(email -> !email.equals(currentUser.getEmail()))
+                .toList();
     }
 
     @Override
@@ -180,8 +170,8 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
     public MessageView sendMessage(Long chatId, String messageText, String senderEmail) {
         User currentUser = getCurrentUser(senderEmail, userRepository);
 
-        ChatRoom chatRoom = chatRoomRepository.findById(chatId)
-                .orElseThrow(() -> new NotFoundError("Chat not found"));
+        ChatRoom chatRoom = chatRoomRepository.findById(chatId).orElseThrow(ChatNotFoundError::new);
+        // Unseen the chat from all users
         chatRoom.setSeenUsers(null);
         chatRoomRepository.saveAndFlush(chatRoom);
 
@@ -194,7 +184,7 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
     @Override
     public boolean isSubscriptionValid(long chatId, String currentUserEmail) {
         List<ChatRoom> chatRooms = userRepository.findAllChatRoomsByUserEmail(currentUserEmail)
-                .orElseThrow(() -> new NotFoundError("No chat found"));
+                .orElseThrow(ChatNotFoundError::new);
 
         return chatRooms.stream().anyMatch(c -> c.getId() == chatId);
     }
@@ -215,8 +205,7 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService {
     @Transactional
     public SeenChatView seenChat(Long chatId, String userEmail) {
         User user = getCurrentUser(userEmail, userRepository);
-        ChatRoom chatRoom = chatRoomRepository.findById(chatId)
-                .orElseThrow(() -> new NotFoundError("Chat not found"));
+        ChatRoom chatRoom = chatRoomRepository.findById(chatId).orElseThrow(ChatNotFoundError::new);
 
         chatRoom.getSeenUsers().add(user);
 

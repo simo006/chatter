@@ -1,16 +1,28 @@
 package com.project.chatter.model.view.chat;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 
 public class ChatView {
 
     private Long id;
     private String names;
-    private String email;
+    @JsonProperty("email")
+    private String otherUserEmail;
     private String lastMessage;
     private String sender;
     private LocalDateTime dateTimeSent;
     private boolean seen;
+
+    public ChatView() {
+    }
+
+    public ChatView(Long id, String names, boolean seen) {
+        this.id = id;
+        this.names = names;
+        this.seen = seen;
+    }
 
     public Long getId() {
         return id;
@@ -30,12 +42,12 @@ public class ChatView {
         return this;
     }
 
-    public String getEmail() {
-        return email;
+    public String getOtherUserEmail() {
+        return otherUserEmail;
     }
 
-    public ChatView setEmail(String email) {
-        this.email = email;
+    public ChatView setOtherUserEmail(String otherUserEmail) {
+        this.otherUserEmail = otherUserEmail;
         return this;
     }
 

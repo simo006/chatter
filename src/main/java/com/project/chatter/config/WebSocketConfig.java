@@ -28,6 +28,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // Fallback endpoint if the websocket protocol is not used
         registry.addEndpoint("/chat")
                 .setAllowedOrigins("http://localhost:8080");
 
@@ -38,6 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
+        // Validate if the user can subscribe to the desired chat room
         registration.interceptors(chatRoomChannelInterceptor);
     }
 }

@@ -26,7 +26,7 @@ public class ChatRoomChannelInterceptorImpl implements ChatRoomChannelIntercepto
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(message);
-        if (StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())) {
+        if (StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand()) && headerAccessor.getUser() != null) {
             String currentUserEmail = headerAccessor.getUser().getName();
             long chatId = extractChatId(headerAccessor.getDestination()).orElse(SUBSCRIPTION_PATH_MISMATCH);
 

@@ -10,16 +10,16 @@ public class User extends BaseEntity {
     @Column(length = 50, unique = true)
     private String email;
 
-    @Column
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "first_name", length = 30)
+    @Column(name = "first_name", length = 30, nullable = false)
     private String firstName;
 
-    @Column(name = "last_name", length = 30)
+    @Column(name = "last_name", length = 30, nullable = false)
     private String lastName;
 
-    @Column
+    @Column(nullable = false)
     private Integer age;
 
     @ManyToMany(fetch = FetchType.EAGER)

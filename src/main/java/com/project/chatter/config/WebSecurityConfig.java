@@ -47,6 +47,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                     .mvcMatchers("/auth/register").permitAll()
                     .anyRequest().authenticated()
                 .and()
+                    // Change default way of extracting user email and password
                     .addFilterBefore(emailPasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .formLogin().loginProcessingUrl("/auth/login").permitAll()
                     .failureHandler(getAuthenticationFailureHandler())
@@ -56,8 +57,10 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .and()
                     .cors()
                 .and()
+                    // TODO: Enable csrf
                     .csrf()
                     .disable()
+                // Return 403 error instead of login form when the user session expires
                 .exceptionHandling().authenticationEntryPoint(new Http403ForbiddenEntryPoint());
 
         return http.build();

@@ -4,6 +4,7 @@ import com.project.chatter.model.dto.UserDetailsDto;
 import com.project.chatter.model.entity.User;
 import com.project.chatter.repository.UserRepository;
 import com.project.chatter.service.BaseService;
+import com.project.chatter.web.exception.NotFoundError;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class BaseServiceImpl implements BaseService {
@@ -15,7 +16,7 @@ public class BaseServiceImpl implements BaseService {
 
     @Override
     public User getCurrentUser(String userEmail, UserRepository userRepository) {
-        return userRepository.findByEmail(userEmail).get();
+        return userRepository.findByEmail(userEmail).orElseThrow(NotFoundError::new);
     }
 
     @Override

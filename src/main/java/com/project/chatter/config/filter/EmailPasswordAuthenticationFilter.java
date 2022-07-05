@@ -26,6 +26,7 @@ public class EmailPasswordAuthenticationFilter extends UsernamePasswordAuthentic
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
         try {
+            // Extract user email and password from a json object
             EmailAndPasswordDto userData = new ObjectMapper()
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(request.getInputStream(), EmailAndPasswordDto.class);

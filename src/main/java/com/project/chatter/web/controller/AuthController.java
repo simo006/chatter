@@ -62,6 +62,7 @@ public class AuthController extends BaseController {
     public void sendStatusNotificationToAllFriends(Principal principal, @Payload @Valid Message<StatusChangeDto> message) {
         List<String> friendsEmails = userService.getUserFriendsEmails(principal.getName());
 
+        // Send status to all friends that the current user is online
         friendsEmails.forEach(email -> simpMessagingTemplate.convertAndSendToUser(email, "/queue/status", message));
     }
 
@@ -69,6 +70,7 @@ public class AuthController extends BaseController {
     public void sendStatusNotificationToFriend(@Payload @Valid Message<StatusChangeDto> message) {
         StatusChangeDto statusChangeDto = message.getPayload();
 
+        // Return status back to the user the other user is online and has received the previous message
         simpMessagingTemplate.convertAndSendToUser(statusChangeDto.getSendTo(), "/queue/status", message);
     }
 }

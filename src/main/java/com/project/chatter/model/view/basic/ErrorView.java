@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ErrorView extends ResponseView {
 
-    private String error;
+    private final String error;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("info")

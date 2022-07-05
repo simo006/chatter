@@ -5,13 +5,13 @@ import java.time.format.DateTimeFormatter;
 
 public abstract class ResponseView {
 
-    private String timestamp;
+    private final String timestamp;
 
-    private int status;
+    private final int status;
 
-    private String message;
+    private final String message;
 
-    private String path;
+    private final String path;
 
     public ResponseView(int status, String message, String path) {
         this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);

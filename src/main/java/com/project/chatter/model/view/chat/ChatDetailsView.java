@@ -1,5 +1,7 @@
 package com.project.chatter.model.view.chat;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class ChatDetailsView {
@@ -7,7 +9,8 @@ public class ChatDetailsView {
     private Long id;
     private List<String> members;
     private String name;
-    private String email;
+    @JsonProperty("email")
+    private String otherUserEmail;
     private List<MessageView> messages;
     private List<String> seenBy;
 
@@ -46,12 +49,12 @@ public class ChatDetailsView {
         return this;
     }
 
-    public String getEmail() {
-        return email;
+    public String getOtherUserEmail() {
+        return otherUserEmail;
     }
 
-    public ChatDetailsView setEmail(String email) {
-        this.email = email;
+    public ChatDetailsView setOtherUserEmail(String otherUserEmail) {
+        this.otherUserEmail = otherUserEmail;
         return this;
     }
 

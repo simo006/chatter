@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SuccessView extends ResponseView {
 
-    private String success;
+    private final String success;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("data")

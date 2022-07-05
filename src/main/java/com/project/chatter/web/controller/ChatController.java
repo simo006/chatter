@@ -1,7 +1,6 @@
 package com.project.chatter.web.controller;
 
 import com.project.chatter.model.dto.SendMessageDto;
-import com.project.chatter.model.dto.UserDetailsDto;
 import com.project.chatter.model.view.basic.SuccessView;
 import com.project.chatter.model.view.chat.ChatDetailsView;
 import com.project.chatter.model.view.chat.ChatView;
@@ -14,7 +13,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,7 +65,7 @@ public class ChatController extends BaseController {
 
     @MessageMapping("/chat-room/{id}/seen")
     @SendTo("/chat-room/{id}/messages")
-    public SeenChatView sendMessageNotificationToUsersInRoom(@DestinationVariable(value = "id") Long chatId, Principal principal) {
+    public SeenChatView sendSeenChatNotificationToUsersInRoom(@DestinationVariable(value = "id") Long chatId, Principal principal) {
         return chatService.seenChat(chatId, principal.getName());
     }
 }
