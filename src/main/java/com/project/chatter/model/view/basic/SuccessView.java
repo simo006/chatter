@@ -11,13 +11,13 @@ public class SuccessView extends ResponseView {
     @JsonProperty("data")
     private Object additionalData;
 
-    public SuccessView(int status, String message, String path, String success, Object additionalData) {
+    public SuccessView(int status, String success, String message, String path, Object additionalData) {
         super(status, message, path);
         this.success = success;
         this.additionalData = additionalData;
     }
 
-    public SuccessView(int status, String message, String path, String success) {
+    public SuccessView(int status, String success, String message, String path) {
         super(status, message, path);
         this.success = success;
     }

@@ -11,13 +11,13 @@ public class ErrorView extends ResponseView {
     @JsonProperty("info")
     private Object additionalInfo;
 
-    public ErrorView(int status, String message, String path, String error, Object additionalInfo) {
+    public ErrorView(int status, String error, String message, String path, Object additionalInfo) {
         super(status, message, path);
         this.error = error;
         this.additionalInfo = additionalInfo;
     }
 
-    public ErrorView(int status, String message, String path, String error) {
+    public ErrorView(int status, String error, String message, String path) {
         super(status, message, path);
         this.error = error;
     }
