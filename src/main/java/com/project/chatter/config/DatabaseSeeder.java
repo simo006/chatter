@@ -21,8 +21,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        roleService.populateRoles();
-        userService.populateUsers();
-        chatService.populateChatRoomAndMessages();
+//        roleService.populateRoles();
+//        userService.populateUsers();
+//        chatService.populateChatRoomAndMessages();
     }
 }
